@@ -19,6 +19,7 @@ const ManagePosts = lazy(() => import('./pages/admin/ManagePosts'))
 const PostEditor = lazy(() => import('./pages/admin/PostEditor'))
 const ManageCategories = lazy(() => import('./pages/admin/ManageCategories'))
 const ManageUsers = lazy(() => import('./pages/admin/ManageUsers'))
+const Reports = lazy(() => import('./pages/admin/Reports'))
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="berita" element={<ManagePosts />} />
             <Route path="berita/baru" element={<PostEditor />} />
             <Route path="berita/:id/edit" element={<PostEditor />} />
+            <Route path="laporan" element={<ProtectedRoute requireAdmin><Reports /></ProtectedRoute>} />
             <Route path="kategori" element={<ProtectedRoute requireAdmin><ManageCategories /></ProtectedRoute>} />
             <Route path="pengguna" element={<ProtectedRoute requireAdmin><ManageUsers /></ProtectedRoute>} />
           </Route>

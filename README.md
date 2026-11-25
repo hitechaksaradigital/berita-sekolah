@@ -1,6 +1,6 @@
 # Portal Berita Sekolah
 
-Website berita sekolah berbasis **React + Vite + Supabase**, siap dibangun menjadi file statis lalu di-upload ke **cPanel** (`public_html`). Pengunjung bisa membaca dan mencari berita; penulis (`writer`) membuat draft; admin (`admin`) mempublikasikan berita serta mengelola kategori dan pengguna.
+Website berita sekolah berbasis **React + Vite + Supabase**, siap dibangun menjadi file statis lalu di-upload ke **cPanel** (`public_html`). Pengunjung bisa membaca dan mencari berita; penulis (`writer`) membuat draft; admin (`admin`) mempublikasikan berita, mengelola kategori dan pengguna, serta mengunduh laporan berita CSV.
 
 ---
 
@@ -73,7 +73,7 @@ Langkah 1–6 di bawah hanya diperlukan bila Anda membuat project Supabase baru.
 
 - Publik hanya dapat membaca berita `published` dan daftar kategori.
 - Pengguna login dapat membaca semua status berita; `writer` hanya membuat/edit berita miliknya dan **tidak dapat** mempublikasikan atau menandai *featured*.
-- Hanya `admin` yang dapat menghapus berita, mengelola kategori, mengubah role, dan mempublikasikan.
+- Hanya `admin` yang dapat menghapus berita, mengelola kategori, mengubah role, mempublikasikan, dan membuka menu **Laporan** untuk mengunduh CSV.
 - Klik pembaca memanggil RPC `increment_post_views`; publik tidak diberi izin `UPDATE` langsung pada tabel `posts`.
 - Gambar diunggah ke bucket `news-images` (publik untuk dibaca, hanya pengguna login yang boleh mengunggah). Ukuran file dikompres di browser menjadi ±300 KB sebelum diunggah.
 
@@ -161,7 +161,7 @@ src/
   data/demo.js           Data contoh mode demo
   lib/api.js             Semua query Supabase + fallback demo
   pages/public/          Halaman pembaca
-  pages/admin/           Login, dashboard, kelola berita/kategori/pengguna
+  pages/admin/           Login, dashboard, kelola berita/kategori/pengguna, laporan CSV
   styles.css             Token desain & seluruh gaya visual
 supabase/schema.sql      Skema, RLS, RPC, storage, seed kategori
 ```
@@ -172,9 +172,9 @@ supabase/schema.sql      Skema, RLS, RPC, storage, seed kategori
 
 - `npm install` berhasil (29 peringatan kerentanan moderat dari dependensi, belum ditangani).
 - `npm run lint` — 0 error, 0 warning.
-- `npm run build` — berhasil menghasilkan `dist/` dengan *chunk* admin terpisah dari bundel publik.
+- `npm run build` — berhasil menghasilkan `dist/` dengan *chunk* admin terpisah dari bundel publik, termasuk `Reports-*.js`.
 - Inspeksi tata letak otonom (taste-skill, 1440/768/390 px) pada halaman publik: beranda `0 FAIL / 7 WARN`, `/berita` `0 FAIL / 3 WARN`, detail artikel `0 FAIL / 5 WARN`, `/kategori/prestasi` `0 FAIL / 2 WARN`, `/cari?q=sekolah` `0 FAIL / 3 WARN`, `/tentang` `0 FAIL / 2 WARN`.
-- Inspeksi layar aplikasi (`--app`) pada halaman admin: login `0 FAIL / 0 WARN`, dashboard `0 FAIL / 0 WARN`, kelola berita `0 FAIL / 1 WARN`, editor `0 FAIL / 2 WARN`. Sisa peringatan bersifat disengaja: angka pada tabel mobile dirata-kiri karena tabel berubah menjadi tumpukan baris; kanvas editor kosong dan kartu metadata yang lebih pendek adalah kondisi normal saat menulis berita baru.
+- Inspeksi layar aplikasi (`--app`) pada halaman admin: login `0 FAIL / 0 WARN`, dashboard `0 FAIL / 0 WARN`, kelola berita `0 FAIL / 1 WARN`, editor `0 FAIL / 2 WARN`. Sisa peringatan bersifat disengaja: angka pada tabel mobile dirata-kiri karena tabel berubah menjadi tumpukan baris; kanvas editor kosong dan kartu metadata yang lebih pendek adalah kondisi normal saat menulis berita baru. Halaman laporan mengikuti pola tabel dan kartu yang sama.
 - Lint sumber taste-skill mode aplikasi: `0 FAIL / 1 WARN` (tanda pisah em pada teks contoh). Mode publik tetap menandai garis 1 px pada komponen admin karena kedua gaya berada dalam satu `src/styles.css`; garis tersebut justru diizinkan oleh sheet aplikasi.
 
 ### Verifikasi Supabase sungguhan (25 Nov 2026)
@@ -183,5 +183,6 @@ supabase/schema.sql      Skema, RLS, RPC, storage, seed kategori
 - RLS lewat REST: anon hanya melihat 7 berita `published`; pengguna login melihat 8 (termasuk draf). Writer dapat mengedit draf miliknya, tetapi tidak dapat mempublikasikan (403 `42501`) atau mengedit berita penulis lain; admin dapat mengedit draf. Upaya writer mengubah role sendiri tidak berubah di database.
 - RPC `increment_post_views` dan bucket Storage `news-images`: unggah anon ditolak, unggah/login writer berhasil, hapus objek uji berhasil.
 - UI: beranda memuat 6 berita + kategori langsung dari `*.supabase.co/rest/v1` (HTTP 200); login admin berhasil dan dashboard menampilkan 8 berita / 7 terbit / 1 draf.
+- Laporan CSV: tombol unduh menghasilkan `laporan-berita-2026-11-25.csv` dengan BOM UTF-8, 16 kolom, dan 8 baris berita; filter status `Terbit` menghasilkan 7 baris. Menu dan rute `/admin/laporan` hanya terlihat/dapat dibuka oleh `admin`; `writer` dialihkan ke `/admin`.
 
 Masih perlu dilakukan manual sebelum produksi: penilaian estetika screenshot, penggantian identitas sekolah, konten berita, dan foto contoh, serta rotasi kata sandi awal.

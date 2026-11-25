@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { ExternalLink, FileText, FolderTree, LayoutDashboard, LogOut, Menu, Users, X } from 'lucide-react'
+import { ExternalLink, FileDown, FileText, FolderTree, LayoutDashboard, LogOut, Menu, Users, X } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { getAllPosts } from '../../lib/api'
 import { SITE } from '../../config/site'
@@ -8,6 +8,7 @@ import { SITE } from '../../config/site'
 const NAV = [
   { to: '/admin', label: 'Ringkasan', icon: LayoutDashboard, end: true },
   { to: '/admin/berita', label: 'Berita', icon: FileText },
+  { to: '/admin/laporan', label: 'Laporan', icon: FileDown, admin: true },
   { to: '/admin/kategori', label: 'Kategori', icon: FolderTree, admin: true },
   { to: '/admin/pengguna', label: 'Pengguna', icon: Users, admin: true },
 ]
