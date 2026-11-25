@@ -23,9 +23,9 @@ npm run build   # menghasilkan folder dist/
 npm run preview # pratinjau hasil build
 ```
 
-### Mode demo (belum ada Supabase)
+### Mode demo (fallback, saat ini nonaktif)
 
-Selama `.env` belum berisi kredensial yang valid, aplikasi otomatis memakai **data contoh** dan **login tiruan** yang tersimpan di `localStorage`. Ini memungkinkan seluruh alur diceka tanpa backend.
+Selama `.env` belum berisi kredensial yang valid, aplikasi otomatis memakai **data contoh** dan **login tiruan** yang tersimpan di `localStorage`. Ini memungkinkan seluruh alur diceka tanpa backend. Pada checkout ini `.env` sudah terisi untuk project `berita-sekolah`, jadi mode demo **tidak dipakai**.
 
 | Peran | Email | Kata sandi |
 | --- | --- | --- |
@@ -37,6 +37,22 @@ Mode demo **hanya untuk pratinjau**. Berita, kategori, dan sesi yang dibuat tida
 ---
 
 ## 2. Siapkan Supabase
+
+### Project yang sudah terhubung
+
+| Item | Nilai |
+| --- | --- |
+| Nama project | `berita-sekolah` |
+| Project ref | `xvfnepiofimorudvwbes` |
+| Region | `ap-southeast-1` (Singapura) |
+| URL | `https://xvfnepiofimorudvwbes.supabase.co` |
+| Status skema | `supabase/schema.sql` sudah diterapkan (tabel, RLS, RPC, bucket, 5 kategori) |
+| Konten | 8 berita: 7 `published`, 1 `draf` |
+| Akun | 1 admin (`admin@sekolahkita.sch.id`), 2 penulis (`writer@…`, `siswa@…`) |
+
+Kata sandi awal ada di [`supabase/credentials.local.md`](supabase/credentials.local.md) (file ini **tidak ikut di-commit**). Ganti kata sandi tersebut sebelum situs dipakai produksi.
+
+Langkah 1–6 di bawah hanya diperlukan bila Anda membuat project Supabase baru. Untuk project di atas, lanjut ke bagian 3.
 
 1. Buat project baru di [Supabase Dashboard](https://supabase.com/dashboard).
 2. Buka **SQL Editor → New query**, tempel seluruh isi [`supabase/schema.sql`](supabase/schema.sql), lalu **Run**.  
@@ -67,15 +83,14 @@ Mode demo **hanya untuk pratinjau**. Berita, kategori, dan sesi yang dibuat tida
 
 ## 3. Hubungkan aplikasi ke Supabase
 
-Salin `.env.example` menjadi `.env`, lalu isi:
+File `.env` sudah dibuat dengan kredensial project `berita-sekolah`:
 
 ```env
-VITE_SUPABASE_URL=https://xxxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
-VITE_SITE_NAME=Berita Sekolah
+VITE_SUPABASE_URL=https://xvfnepiofimorudvwbes.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon key project tersebut>
 ```
 
-Restart `npm run dev`. Mode demo otomatis mati ketika kedua nilai Supabase terisi. Kunci `anon` memang terlihat di browser—keamanan bergantung pada RLS, jangan pernah memasukkan *service role key* ke dalam kode atau file `.env` yang ikut ter-build.
+Untuk clone baru, salin `.env.example` menjadi `.env` lalu isi URL dan anon key project Anda. Setelah `.env` berisi nilai yang valid, restart `npm run dev`; mode demo otomatis mati. Kunci `anon` memang terlihat di browser—keamanan bergantung pada RLS, jangan pernah memasukkan *service role key* ke dalam kode atau file `.env` yang ikut ter-build.
 
 Pastikan `.env` tidak di-commit (sudah ada di `.gitignore`).
 
@@ -86,7 +101,7 @@ Pastikan `.env` tidak di-commit (sudah ada di `.gitignore`).
 Sebelum dipublish:
 
 1. Edit [`src/config/site.js`](src/config/site.js): nama sekolah, singkatan, tagline, kota, tahun berdiri, jumlah siswa/guru, email, telepon, alamat, dan tautan sosial.
-2. Ganti seluruh berita contoh di [`src/data/demo.js`](src/data/demo.js) melalui halaman admin setelah Supabase aktif. Data demo tidak lagi dipakai dalam mode Supabase, tetapi tetap ada di repository sebagai fallback pengembangan.
+2. Ganti 8 berita contoh yang sudah ada di Supabase melalui halaman admin (`/admin/berita`). [`src/data/demo.js`](src/data/demo.js) tidak dipakai dalam mode Supabase, tetapi tetap ada di repository sebagai fallback pengembangan.
 3. Ganti delapan foto contoh di `public/images/` dengan foto kegiatan sekolah Anda. Tujuh foto berlisensi **CC0** dan foto upacara Sekolah Rakyat di beranda berstatus **domain publik**; kreditnya tampil di footer lewat [`public/images/credits.json`](public/images/credits.json). Perbarui atau hapus berkas credits bila semua foto sudah diganti.
 4. Perbarui judul/deskripsi/meta di [`index.html`](index.html) bila perlu.
 
@@ -144,4 +159,11 @@ supabase/schema.sql      Skema, RLS, RPC, storage, seed kategori
 - Inspeksi layar aplikasi (`--app`) pada halaman admin: login `0 FAIL / 0 WARN`, dashboard `0 FAIL / 0 WARN`, kelola berita `0 FAIL / 1 WARN`, editor `0 FAIL / 2 WARN`. Sisa peringatan bersifat disengaja: angka pada tabel mobile dirata-kiri karena tabel berubah menjadi tumpukan baris; kanvas editor kosong dan kartu metadata yang lebih pendek adalah kondisi normal saat menulis berita baru.
 - Lint sumber taste-skill mode aplikasi: `0 FAIL / 1 WARN` (tanda pisah em pada teks contoh). Mode publik tetap menandai garis 1 px pada komponen admin karena kedua gaya berada dalam satu `src/styles.css`; garis tersebut justru diizinkan oleh sheet aplikasi.
 
-Belum diverifikasi: koneksi ke project Supabase sungguhan beserta RLS/RPC-nya (karena kredensial belum diberikan) dan penilaian estetika screenshot secara manual; lakukan keduanya setelah `.env` dan identitas sekolah diisi.
+### Verifikasi Supabase sungguhan (25 Nov 2026)
+
+- Auth: login `admin`, `writer`, dan `siswa` melalui `/auth/v1/token?grant_type=password` mengembalikan HTTP 200 + `access_token`. Penyebab gagal sebelumnya (`email_change` NULL pada `auth.users`) sudah diperbaiki.
+- RLS lewat REST: anon hanya melihat 7 berita `published`; pengguna login melihat 8 (termasuk draf). Writer dapat mengedit draf miliknya, tetapi tidak dapat mempublikasikan (403 `42501`) atau mengedit berita penulis lain; admin dapat mengedit draf. Upaya writer mengubah role sendiri tidak berubah di database.
+- RPC `increment_post_views` dan bucket Storage `news-images`: unggah anon ditolak, unggah/login writer berhasil, hapus objek uji berhasil.
+- UI: beranda memuat 6 berita + kategori langsung dari `*.supabase.co/rest/v1` (HTTP 200); login admin berhasil dan dashboard menampilkan 8 berita / 7 terbit / 1 draf.
+
+Masih perlu dilakukan manual sebelum produksi: penilaian estetika screenshot, penggantian identitas sekolah, konten berita, dan foto contoh, serta rotasi kata sandi awal.
