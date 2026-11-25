@@ -6,3 +6,5 @@ dist
 .taste-skill
 *.log
 supabase/*.local.md
+.vercel
+.env*

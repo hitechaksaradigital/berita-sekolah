@@ -107,7 +107,25 @@ Sebelum dipublish:
 
 ---
 
-## 5. Build dan upload ke cPanel
+## 5. Deploy
+
+### Vercel (production)
+
+Proyek ini sudah memiliki [`vercel.json`](vercel.json) untuk build Vite (`dist/`) dan rewrite SPA, sehingga rute seperti `/berita/...` tidak 404 saat di-refresh.
+
+```bash
+npx vercel login                 # hanya jika belum login
+npx vercel link --yes --project berita-sekolah
+npx vercel env add VITE_SUPABASE_URL --environment production --type config
+npx vercel env add VITE_SUPABASE_ANON_KEY --environment production --type config
+npx vercel deploy --prod --yes
+```
+
+Tambahkan pula variabel yang sama ke `preview` dan `development` bila ingin men-deploy branch lain. Kedua nilai di atas adalah URL dan **anon/publishable key** Supabase; keduanya aman dikirim ke browser karena akses data diatur oleh RLS. **Jangan** pernah menaruh *service role key* di env var `VITE_*` atau kode klien.
+
+Folder `.vercel/` dan `.env.local` yang dibuat oleh CLI sudah masuk `.gitignore`.
+
+### cPanel
 
 ```bash
 npm run build
